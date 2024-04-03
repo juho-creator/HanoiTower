@@ -5,11 +5,13 @@
 This is a Hanoi Tower game developed in C++ as an assignment for Advanced C++ Programming class.
 
 ## Demonstration Video
-
+</br>
 
 ## Description
 
 The Hanoi Tower game is a classic puzzle that involves moving a stack of disks from one rod to another, following specific rules. In this version of the game, players can choose the number of rods and disks they want to play with, adding an extra level of challenge and strategy.
+</br>
+
 
 ### Rules
 1. The game starts with all the disks stacked in ascending order of size on one rod.
@@ -25,12 +27,15 @@ The Hanoi Tower game is a classic puzzle that involves moving a stack of disks f
 - Visual representation of the tower and disks for easier understanding.
 
 Enjoy the challenge of solving the Hanoi Tower puzzle and test your problem-solving skills!
+</br>
 
 
 
 
 
 
-### Reference
+## Reference
+- [What is Tower of Hanoi?](https://en.wikipedia.org/wiki/Tower_of_Hanoi)
 - [Naming conventions in C++](https://www.geeksforgeeks.org/naming-convention-in-c/)
+
 
