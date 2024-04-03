@@ -1,3 +1,6 @@
+[![English](https://img.shields.io/badge/lang-English-blue.svg)](https://github.com/juho-creator/HanoiTower/blob/main/README.md)
+
+
 # 하노이 타워
 코드는 고급 C프로그래밍 수업의 과제로 개발된 하노이 타워 게임입니다.
 
