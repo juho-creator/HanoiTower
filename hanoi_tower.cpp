@@ -2,6 +2,22 @@
 #include <vector>
 using namespace std;
 
+// Initial Game setup
+void GameSetup(int& rods, int& disks)
+{
+    cout << "Welcome to Tower of Hanoi!" << endl;
+    cout << "Let's set up the game." << endl<< endl;
+
+    cout << "Total number of rods: ";
+    cin >> rods;
+
+    cout << "Total number of disks: ";
+    cin >> disks;
+    cout << endl;
+}
+
+
+// Initialize disk and rod with user input
 vector<vector<int>> InitializeDisk(int t, int d)
 {
     // 1. Initializing vector
@@ -13,36 +29,36 @@ vector<vector<int>> InitializeDisk(int t, int d)
         result[0][i] = d-i;
     }
 
-    // 3. Initializing rod without disks to zero
-    for (int i = 1; i < t; i++) {
-        for (int j = 0; j < d; j++)
-        {
-            result[i][j] = 0;
-        }
-    }
+
+
     return result;
 }
 
+
+// Print each rods with corresponding disks
 void PrintTower(vector<vector<int>> v)
 {
     int numRows = v.size();
-    int numCols = v[0].size();
-    
+
+    // Iterate through each rod
     for (int r = 0; r < numRows; r++)
     {
         cout << "[" << r + 1 << "] ";
-        if (v[r][0] > 0)
+
+        // Iterate through each disk on the rod
+        for (int j = 0; j < v[r].size(); j++)
         {
-            for (int j = 0; j < numCols; j++)
+            if (v[r][j] != 0)
             {
                 cout << v[r][j] << " ";
             }
         }
-
         cout << endl;
     }
     cout << endl;
 }
+
+
 
 // Function to display prompt for tower input
 void DisplayTowerPrompt(int status, int rods) {
@@ -59,6 +75,8 @@ void DisplayTowerPrompt(int status, int rods) {
     cout << "]):";
 }
 
+
+// Get peak disk of the rod
 int getPeakDisk(const vector<int>& v) {
     if (v.empty()) {
         // If the vector is empty, return -1 indicating no disk
@@ -76,12 +94,20 @@ int getPeakDisk(const vector<int>& v) {
 }
 
 
+// Function to move disk from one tower to another
+void moveDisk(vector<vector<int>>& v, int from, int to) {
+    v[to-1].insert(v[to-1].begin(), v[from-1].back());
+    cout << "removed : " << v[from-1].back() << endl;
+    v[from-1].pop_back();
+}
 
+// Ask Input to move disk
 int AskInput(vector<vector<int>>& v, int status, int rods) {
 
     // Display tower prompt
     DisplayTowerPrompt(status, rods);
 
+    // Get from and to index
     int from, to;
     cin >> from >> to;
 
@@ -90,36 +116,40 @@ int AskInput(vector<vector<int>>& v, int status, int rods) {
     {
         cout << "=> Move failed!" << endl;
     }
-    
+    // If index is within the range
     else
     {
-        int fromElement = v.at(from - 1).at(0);
+        // Get peak disk of the rod moving from and moving to
+        int fromPeakElement = getPeakDisk(v[from-1]);
+        int toPeakElement = getPeakDisk(v[to-1]);
         
-        int toPeakElement = getPeakDisk(v[to]);
-        cout << "toPeakElement : " << toPeakElement;
+        cout << "fromPeakElement : " << fromPeakElement << endl;
+        cout << "toPeakElement : " << toPeakElement << endl;
 
-
-        // There's disk in the rod moving from and rod moving to has a disk greater than disk being moved
-        if (fromElement != 0 && toPeakElement > fromElement) {
-            status = status + 1;
+        // If there's nothing on the rod moving to
+        if (fromPeakElement != 0 && toPeakElement == 0)
+        { 
+            moveDisk(v, from, to);
+            PrintTower(v);
+            cout << "Move succeeded!" << endl; 
+        }
+        // When there's something on the rod moving to 
+        else if (fromPeakElement !=0 && fromPeakElement < toPeakElement)
+        {
+            moveDisk(v, from, to);
+            PrintTower(v);
+            cout << "Move succeeded!" << endl;
+        }
+        else{
+            cout << "Move failed!" << endl;
         }
     }
 
     return status;
 }
 
-void GameSetup(int& rods, int& disks)
-{
-    cout << "Welcome to Tower of Hanoi!" << endl;
-    cout << "Let's set up the game." << endl<< endl;
 
-    cout << "Total number of rods: ";
-    cin >> rods;
 
-    cout << "Total number of disks: ";
-    cin >> disks;
-    cout << endl;
-}
 
 
 
@@ -132,7 +162,8 @@ int main()
 
     // 1. Initialize disks  
     vector<vector<int>> towers = InitializeDisk(rods, disks);
-    
+
+
     // 2. Print towers
     PrintTower(towers);
 
@@ -152,4 +183,3 @@ int main()
     //    
     //MoveDisk()
  
-
