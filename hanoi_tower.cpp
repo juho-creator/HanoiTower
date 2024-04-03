@@ -2,10 +2,79 @@
 #include <vector>
 #include <cstdlib>
 #include <string>
+
 using namespace std;
 
-// Initial Game setup
-void GameSetup(int& rods, int& disks){
+// CODE WORK FLOW
+// 1. Play the game
+void play_game();
+
+// 2. Set up the game with user input for rods and disks
+void setup_game(int& rods, int& disks);
+
+// 3. Initialize game settings with the specified number of rods and disks
+vector<vector<int>> initialize_disks(int rods, int disks); 
+
+// 4. Print towers with corresponding disks
+void print_towers(vector<vector<int>> towers);
+
+// 5. Create target vector for checking if the game is solved
+vector<int>create_target_vector(int n);
+
+// 6. Ask user to input disks to move from and to
+int ask_input(vector<vector<int>>& towers, int& status, int rods, int disks);
+
+// 7. Get highest disk on rod (for checking if disk can be moved)
+int get_peak_disk(const vector<int>& rod);
+
+// 8. Move disk from one rod to another
+void move_disk(vector<vector<int>>& towers, int from, int to);
+
+// 9. Display prompt for tower input
+void display_tower_prompt(int& status, int rods);
+
+// 10. Ask user if they want to replay or exit
+void ask_replay();
+
+
+
+int main()
+{
+    play_game();
+ }
+ 
+ 
+// DEFINITION OF FUNCTIONS
+void play_game(){
+    int rods;
+    int disks;
+    
+    setup_game(rods, disks);
+    
+
+    // 1. Initialize disks  
+    vector<vector<int>> towers = initialize_disks(rods, disks);
+
+
+    // 2. Print towers
+    print_towers(towers);
+
+    // 3. Ask for input move
+    int status = 1;
+    while (1)
+    {
+        // When user solved the game
+        if (status == -1)
+        {
+            break; 
+        }
+        
+        status = ask_input(towers, status, rods, disks);
+    }
+    ask_replay();
+}
+ 
+void setup_game(int& rods, int& disks){
     cout << endl;
     cout << "Welcome to Tower of Hanoi!" << endl;
     cout << "Let's set up the game." << endl<< endl;
@@ -18,8 +87,7 @@ void GameSetup(int& rods, int& disks){
     cout << endl;
 }
 
-
-vector<vector<int>> InitializeDisk(int t, int d){
+vector<vector<int>> initialize_disks(int t, int d){
     // Initializing vector of vectors
     vector<vector<int>> result(t); // Initialize result with size t
     
@@ -36,9 +104,7 @@ vector<vector<int>> InitializeDisk(int t, int d){
     return result;
 }
 
-
-// Print each rods with corresponding disks
-void PrintTower(vector<vector<int>> v){
+void print_towers(vector<vector<int>> v){
     int numRows = v.size();
 
     // Iterate through each rod
@@ -59,26 +125,70 @@ void PrintTower(vector<vector<int>> v){
     cout << endl;
 }
 
+int ask_input(vector<vector<int>>& v, int& status, int rods, int disks) {
+    vector<int> target = create_target_vector(disks);
 
+    while (1) {
+        // Display tower prompt
+        display_tower_prompt(status, rods);
 
-// Function to display prompt for tower input
-void DisplayTowerPrompt(int&status, int rods) {
-    cout << endl;
-    cout << "[" << status << "] " << "From which tower will you move a disk to which tower? (from=[1";
-    for (int i = 1; i < rods; i++) {
-        cout << "|" << i + 1;
+        // Get from and to index
+        int from, to;
+        cin >> from >> to;
+
+        // If index out of range or when trying to move disk at the same rod
+        if (from == to || from <= 0 || from > rods || to <= 0 || to > rods) {
+            cout << "=> Move failed!" << endl;
+        }
+        else {
+            // Get peak disk of the rod moving from and moving to
+            int fromPeakElement = get_peak_disk(v[from - 1]);
+            int toPeakElement = get_peak_disk(v[to - 1]);
+
+            // If there's nothing on the rod moving to
+            if (fromPeakElement != 0 && toPeakElement == 0) {
+                move_disk(v, from, to);
+                cout << "=> Move succeeded!" << endl << endl;
+                print_towers(v);
+            }
+            // When there's something on the rod moving to
+            else if (fromPeakElement != 0 && fromPeakElement < toPeakElement) {
+                move_disk(v, from, to);
+                cout << "=> Move succeeded!" << endl << endl;
+                print_towers(v);
+            }
+            else {
+                cout << "Move failed!" << endl;
+            }
+
+            // Iterate over the 2D vector starting from the second row
+            for (auto it = v.begin() + 1; it != v.end(); ++it) {
+                // Check if the current row is equal to the target vector
+                if (*it == target) {
+                    cout << "Congratulations! You solved it in " << status << " moves!" << endl;
+                    return -1;
+                }
+            }
+            status +=1;
+        }
     }
-    cout << "], to = [1";
-
-    for (int i = 1; i < rods; i++) {
-        cout << "|" << i + 1;
-    }
-    cout << "]):";
+    return status;
 }
 
+vector<int> create_target_vector(int n) {
+    std::vector<int> target;
+    for (int i = n; i >= 1; --i) {
+        target.push_back(i);
+    }
+    return target;
+}
 
-// Get peak disk of the rod
-int getPeakDisk(const vector<int>& v) {
+void move_disk(vector<vector<int>>& v, int from, int to) {
+    v[to-1].push_back(v[from-1].back());
+    v[from-1].pop_back();
+}
+
+int get_peak_disk(const vector<int>& v) {
     if (v.empty()) {
         // If the vector is empty, return -1 indicating no disk
         return 0;
@@ -94,97 +204,21 @@ int getPeakDisk(const vector<int>& v) {
     return 0;
 }
 
-
-// Function to move disk from one tower to another
-void moveDisk(vector<vector<int>>& v, int from, int to) {
-    v[to-1].push_back(v[from-1].back());
-    v[from-1].pop_back();
-}
-
-// Ask Input to move disk
-int AskInput(vector<vector<int>>& v, int& status, int rods) {
-    vector<int> target = {3, 2, 1};
-
-    while (1) {
-        // Display tower prompt
-        DisplayTowerPrompt(status, rods);
-
-        // Get from and to index
-        int from, to;
-        cin >> from >> to;
-
-        // If index out of range or when trying to move disk at the same rod
-        if (from == to || from <= 0 || from > rods || to <= 0 || to > rods) {
-            cout << "=> Move failed!" << endl;
-        }
-        else {
-            // Get peak disk of the rod moving from and moving to
-            int fromPeakElement = getPeakDisk(v[from - 1]);
-            int toPeakElement = getPeakDisk(v[to - 1]);
-
-            // If there's nothing on the rod moving to
-            if (fromPeakElement != 0 && toPeakElement == 0) {
-                moveDisk(v, from, to);
-                cout << "=> Move succeeded!" << endl << endl;
-                PrintTower(v);
-            }
-            // When there's something on the rod moving to
-            else if (fromPeakElement != 0 && fromPeakElement < toPeakElement) {
-                moveDisk(v, from, to);
-                cout << "=> Move succeeded!" << endl << endl;
-                PrintTower(v);
-            }
-            else {
-                cout << "Move failed!" << endl;
-            }
-
-            // Iterate over the 2D vector
-            for (const auto& row : v) {
-                // Check if the current row is equal to the target vector
-                if (row == target) {
-                    cout << "Congratulation! You solved it in " + to_string(status) + " moves!" << endl;
-                    return -1;
-                }
-            }
-            status +=1;
-        }
+void display_tower_prompt(int&status, int rods) {
+    cout << endl;
+    cout << "[" << status << "] " << "From which tower will you move a disk to which tower? (from=[1";
+    for (int i = 1; i < rods; i++) {
+        cout << "|" << i + 1;
     }
+    cout << "], to = [1";
 
-    return status;
-}
-
-
-void play_game(){
-    int rods;
-    int disks;
-    
-    GameSetup(rods, disks);
-    
-
-    // 1. Initialize disks  
-    vector<vector<int>> towers = InitializeDisk(rods, disks);
-
-
-    // 2. Print towers
-    PrintTower(towers);
-
-    // 3. Ask for input move
-    int status = 1;
-    while (1)
-    {
-        // When user solved the game
-        if (status == -1)
-        {
-            break; 
-        }
-        
-        status = AskInput(towers, status, rods);
+    for (int i = 1; i < rods; i++) {
+        cout << "|" << i + 1;
     }
+    cout << "]):";
 }
 
-
-void replay()
-{
+void ask_replay(){
     cout << "Do you want to play again? (Y/N):";
     char replay;
     cin >> replay;
@@ -196,19 +230,3 @@ void replay()
     }
 }
 
-
-int main()
-{
-    // 1. Start playing game
-    play_game();
-    
-    // 2. ask for replay
-    replay();
-
- }
-
-
-    //IsMoveAllowed()
-    //    
-    //MoveDisk()
- 
