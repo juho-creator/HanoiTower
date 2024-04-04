@@ -8,6 +8,8 @@ void play_game();
 // Greet user with welcome message
 void greet_user();
 
+
+
 // Set up the game with user input for rods and disks
 void setup_game(int& rods, int& disks);
 
@@ -21,7 +23,7 @@ void print_towers(vector<vector<int>> towers);
 vector<int>create_target_vector(int n);
 
 // Ask user to input disks to move from and to
-int ask_input(vector<vector<int>>& towers, int& status, int rods, int disks);
+pair<int,int> ask_input(int& status, int rods);
 
 // Get highest disk on rod (for checking if disk can be moved)
 int get_peak_disk(const vector<int>& rod);
@@ -30,13 +32,15 @@ int get_peak_disk(const vector<int>& rod);
 void move_disk(vector<vector<int>>& towers, int from, int to);
 
 // Display prompt for tower input
-void display_tower_prompt(int& status, int rods);
+void show_move_prompt(int& status, int rods);
 
 // Check if game has been solved
 void checkGameSolved(vector<vector<int>>& v, vector<int>& target, int& status);
 
 // Ask user if they want to replay or exit
 void ask_replay();
+
+bool IsMoveAllowed(int to, int from, int rods, const vector<vector<int>>& v);
 
 
 
@@ -52,7 +56,9 @@ int main()
 void play_game() {
     int rods;
     int disks;
-
+    int to;
+    int from;
+    
     // 1. Greet user with a welcome message
     greet_user();
 
@@ -61,6 +67,9 @@ void play_game() {
 
     // 3. Initialize disks and rods based on user input 
     vector<vector<int>> towers = initialize_disks(rods, disks);
+
+    // Create target vector
+    vector<int> target = create_target_vector(disks);
 
     // 4. Print towers
     print_towers(towers);
@@ -79,8 +88,29 @@ void play_game() {
             ask_replay();
             break;
         }
+        
         // 6. If game is not solved, keep asking user for next move 
-        status = ask_input(towers, status, rods, disks);
+        pair<int,int> move = ask_input(status, rods);
+        to = move.first;
+        from = move.second;
+        
+        
+        // 7. Check if move is valid
+        bool moveable = IsMoveAllowed(to, from, rods, towers);
+        
+        // 8. Change disk location if move is valid
+        if (moveable) {
+            move_disk(towers, from, to);
+            cout << "=> Move succeeded!" << endl << endl;
+            print_towers(towers);
+            status += 1;
+        }
+        else {
+            cout << "=> Move failed!" << endl;
+        }
+        
+        // 9. Check if user solved the game
+        checkGameSolved(towers, target, status);
     }
 }
 
@@ -155,33 +185,15 @@ bool IsMoveAllowed(int to, int from, int rods, const vector<vector<int>>& v) {
     return fromPeakElement != 0 && (toPeakElement == 0 || (fromPeakElement < toPeakElement));
 }
 
-int ask_input(vector<vector<int>>& v, int& status, int rods, int disks) {
-    // Create target vector
-    vector<int> target = create_target_vector(disks);
-
+pair<int,int> ask_input(int& status, int rods) {
     // Display tower prompt
-    display_tower_prompt(status, rods);
+    show_move_prompt(status, rods);
 
     // Get from and to index
     int from, to;
     cin >> from >> to;
-
-    // Check if move is valid
-    bool moveable = IsMoveAllowed(to, from, rods, v);
     
-    // Chnage disk location if move is valid
-    if (moveable) {
-        move_disk(v, from, to);
-        cout << "=> Move succeeded!" << endl << endl;
-        print_towers(v);
-    }
-    else {
-        cout << "=> Move failed!" << endl;
-    }
-
-    // Check if user solved the game
-    checkGameSolved(v, target, status);
-    return status;
+    return make_pair(to,from);
 }
 
 
@@ -195,8 +207,6 @@ void checkGameSolved(vector<vector<int>>& v, vector<int>& target, int& status){
             return ;
         }
     }
-    
-    status += 1;
 }
 
 vector<int> create_target_vector(int n) {
@@ -228,7 +238,7 @@ int get_peak_disk(const vector<int>& v) {
     return 0;
 }
 
-void display_tower_prompt(int& status, int rods) {
+void show_move_prompt(int& status, int rods) {
     cout << endl;
     cout << "[" << status << "] " << "From which tower will you move a disk to which tower? (from=[1";
     for (int i = 1; i < rods; i++) {
