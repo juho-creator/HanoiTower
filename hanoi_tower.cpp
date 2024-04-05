@@ -23,7 +23,7 @@ void print_towers(vector<vector<int>> towers);
 vector<int>create_target_vector(int n);
 
 // Ask user to input disks to move from and to
-pair<int,int> ask_input(int& status, int rods);
+pair<int,int> ask_input(int rods);
 
 // Get highest disk on rod (for checking if disk can be moved)
 int get_peak_disk(const vector<int>& rod);
@@ -75,7 +75,7 @@ void play_game() {
     print_towers(towers);
 
     // 5. Keep asking user input for next movement
-    int status = 1;
+    int status = 0;
     while (1)
     {
         // 6. When user solved the game, stop asking for next move
@@ -89,8 +89,11 @@ void play_game() {
             break;
         }
         
+        // Display tower prompt
+        show_move_prompt(status, rods);
+        
         // 6. If game is not solved, keep asking user for next move 
-        pair<int,int> move = ask_input(status, rods);
+        pair<int,int> move = ask_input(rods);
         to = move.first;
         from = move.second;
         
@@ -134,6 +137,13 @@ void setup_game(int& rods, int& disks) {
         cout << "ERROR : Number of rods must be greater or equal to the number of disks!!" << endl;
         setup_game(rods,disks);
     }
+    
+    else if (rods < 3)
+    {
+        // @ DISPLAY ERROR
+        cout <<  "ERROR : Below minimum number of rods (Min : 3 rods)";
+    }
+    
 }
 
 vector<vector<int>> initialize_disks(int t, int d) {
@@ -185,9 +195,8 @@ bool IsMoveAllowed(int to, int from, int rods, const vector<vector<int>>& v) {
     return fromPeakElement != 0 && (toPeakElement == 0 || (fromPeakElement < toPeakElement));
 }
 
-pair<int,int> ask_input(int& status, int rods) {
-    // Display tower prompt
-    show_move_prompt(status, rods);
+pair<int,int> ask_input(int rods) {
+
 
     // Get from and to index
     int from, to;
@@ -240,7 +249,7 @@ int get_peak_disk(const vector<int>& v) {
 
 void show_move_prompt(int& status, int rods) {
     cout << endl;
-    cout << "[" << status << "] " << "From which tower will you move a disk to which tower? (from=[1";
+    cout << "[" << status + 1<< "] " << "From which tower will you move a disk to which tower? (from=[1";
     for (int i = 1; i < rods; i++) {
         cout << "|" << i + 1;
     }
