@@ -38,15 +38,23 @@ void show_move_prompt(int& status, int rods);
 void checkGameSolved(vector<vector<int>>& v, vector<int>& target, int& status);
 
 // Ask user if they want to replay or exit
-void ask_replay();
+bool ask_replay();
 
 bool IsMoveAllowed(int to, int from, int rods, const vector<vector<int>>& v);
 
+void play_game_loop(vector<vector<int>>& towers, int& status, const int& rods,  vector<int>& target);
 
 
 int main()
 {
-    play_game();
+    bool playing = true;
+
+    while(playing)
+    {
+        play_game();
+        
+        playing = ask_replay();
+    }
 }
 
 
@@ -54,10 +62,7 @@ int main()
 
 // DEFINITION OF FUNCTIONS
 void play_game() {
-    int rods;
-    int disks;
-    int to;
-    int from;
+    int rods,disks;
     
     // 1. Greet user with a welcome message
     greet_user();
@@ -68,14 +73,23 @@ void play_game() {
     // 3. Initialize disks and rods based on user input 
     vector<vector<int>> towers = initialize_disks(rods, disks);
 
-    // Create target vector
+    // 4. Create target vector
     vector<int> target = create_target_vector(disks);
 
-    // 4. Print towers
+    // 5. Print towers
     print_towers(towers);
 
-    // 5. Keep asking user input for next movement
+    // 6. Keep asking user input for next movement
     int status = 0;
+    
+    play_game_loop(towers, status, rods, target);
+}
+
+
+void play_game_loop(vector<vector<int>>& towers, int& status, const int& rods,  vector<int>& target){
+    
+    int to,from;
+
     while (1)
     {
         // 6. When user solved the game, stop asking for next move
@@ -83,9 +97,6 @@ void play_game() {
         {
             // 7. Clear all rods and disks
             towers.clear();
-    
-            // 8. Ask user for replay
-            ask_replay();
             break;
         }
         
@@ -117,6 +128,10 @@ void play_game() {
     }
 }
 
+
+
+
+
 void greet_user(){
     cout << endl;
     cout << "Welcome to Tower of Hanoi!" << endl;
@@ -131,6 +146,12 @@ void setup_game(int& rods, int& disks) {
     cin >> disks;
     cout << endl;
     
+    // ERROR HANDLING
+    if (!cin) // check that cin read an integer
+        error("Input is not an integer");
+
+    
+    // Show error message when number of rods is less than the number of disks
     if (rods < disks)
     {
         // @ DISPLAY ERROR
@@ -138,17 +159,18 @@ void setup_game(int& rods, int& disks) {
         setup_game(rods,disks);
     }
     
+    // Show error message when number of rods is less than the minimum number of rods, that is 3
     else if (rods < 3)
     {
         // @ DISPLAY ERROR
         cout <<  "ERROR : Below minimum number of rods (Min : 3 rods)";
+        setup_game(rods,disks);
     }
-    
 }
 
-vector<vector<int>> initialize_disks(int t, int d) {
+vector<vector<int>> initialize_disks(int r, int d) {
     // Initialize rods without disks
-    vector<vector<int>> towers(t); 
+    vector<vector<int>> towers(r); 
 
     // Create initial tower
     vector<int> initial_tower(d); 
@@ -184,8 +206,28 @@ void print_towers(vector<vector<int>> v) {
 }
 
 bool IsMoveAllowed(int to, int from, int rods, const vector<vector<int>>& v) {
-    // If index is out of range or when trying to move disk at the same rod
-    if (from == to || from <= 0 || from > rods || to <= 0 || to > rods) return false;
+    try{
+        // Check if index is out of range
+        if (from <= 0 || from > rods || to <= 0 || to > rods) 
+            throw range_error("Rod is out of range");   
+        
+        // Check if disk is placed on the same rod 
+        else if (from == to)
+            error("Disk placed on the same rod");
+        return true;
+    } catch (range_error& e) { // Out of range
+        cout << "Range Error: " << e.what() << endl;
+        return false;
+
+    } catch (runtime_error& e){ // Cannot place disk on the same rod
+        cout << "Runtime Error : " << e.what() << endl;
+        return false;
+
+    }
+}
+    
+
+
     
     // Get peak disk of the rod moving from and moving to
     int fromPeakElement = get_peak_disk(v[from - 1]);
@@ -261,13 +303,14 @@ void show_move_prompt(int& status, int rods) {
     cout << "]):";
 }
 
-void ask_replay() {
+bool ask_replay() {
     cout << "Do you want to play again? (Y/N):";
     char replay;
     cin >> replay;
 
     if (replay == 'Y' || replay == 'y')
     {
-        play_game();
+        return true;
     }
+    return false;
 }
