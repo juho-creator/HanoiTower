@@ -1,69 +1,52 @@
+// For more information regarding on the code,
+// Please refer to my github page
+// https://github.com/juho-creator/HanoiTower
+
 #include "std_lib_facilities.h"
+
 using namespace std;
 
-/* CODE WORK FLOW */ 
-// Play the game
-void play_game();
-
-// Greet user with welcome message
 void greet_user();
-
-
-
-// Set up the game with user input for rods and disks
+void clearInputBuffer();
+int get_rods();
+int get_disks();
 void setup_game(int& rods, int& disks);
-
-// Initialize game settings with the specified number of rods and disks
-vector<vector<int>> initialize_disks(int rods, int disks);
-
-// Print towers with corresponding disks
-void print_towers(vector<vector<int>> towers);
-
-// Create target vector for checking if the game is solved
-vector<int>create_target_vector(int n);
-
-// Ask user to input disks to move from and to
-pair<int,int> ask_input(int rods);
-
-// Get highest disk on rod (for checking if disk can be moved)
-int get_peak_disk(const vector<int>& rod);
-
-// Move disk from one rod to another
-void move_disk(vector<vector<int>>& towers, int from, int to);
-
-// Display prompt for tower input
-void show_move_prompt(int& status, int rods);
-
-// Check if game has been solved
-void checkGameSolved(vector<vector<int>>& v, vector<int>& target, int& status);
-
-// Ask user if they want to replay or exit
-bool ask_replay();
-
+vector<vector<int>> initialize_disks(int r, int d);
+vector<int> create_target_vector(int n);
+void print_towers(vector<vector<int>> v);
+int get_peak_disk(const vector<int>& v);
 bool IsMoveAllowed(int to, int from, int rods, const vector<vector<int>>& v);
-
-void play_game_loop(vector<vector<int>>& towers, int& status, const int& rods,  vector<int>& target);
+void display_prompt(int& num_moves, int rods);
+int get_moveFrom();
+int get_moveTo();
+pair<int, int> get_move(int rods, int& num_moves);
+pair<int, int> ask_move(int rods, int& num_moves);
+void move_disk(vector<vector<int>>& v, int from, int to);
+bool checkGameSolved(vector<vector<int>>& v, vector<int>& target, int& num_moves);
+void play_game_loop(vector<vector<int>>& towers, int& num_moves, const int& rods, vector<int>& target);
+void play_game();
+bool ask_replay();
 
 
 int main()
 {
     bool playing = true;
 
-    while(playing)
+    while (playing)
     {
         play_game();
-        
+
         playing = ask_replay();
     }
 }
 
 
 
-
-// DEFINITION OF FUNCTIONS
+/* MAIN LOGIC OF THE GAME */
 void play_game() {
-    int rods,disks;
-    
+    int rods, disks;
+    int num_moves = 0;
+
     // 1. Greet user with a welcome message
     greet_user();
 
@@ -79,109 +62,204 @@ void play_game() {
     // 5. Print towers
     print_towers(towers);
 
-    // 6. Keep asking user input for next movement
-    int status = 0;
-    
-    play_game_loop(towers, status, rods, target);
+    // 6. Keep asking user input for next move
+    play_game_loop(towers, num_moves, rods, target);
 }
 
+void play_game_loop(vector<vector<int>>& towers, int& num_moves, const int& rods, vector<int>& target) {
+    int to, from;
+    bool gameSolved = false;
 
-void play_game_loop(vector<vector<int>>& towers, int& status, const int& rods,  vector<int>& target){
-    
-    int to,from;
-
-    while (1)
+    // 6. If game is not solved, keep asking user for next move 
+    while (!gameSolved)
     {
-        // 6. When user solved the game, stop asking for next move
-        if (status == -1)
-        {
-            // 7. Clear all rods and disks
-            towers.clear();
-            break;
-        }
-        
-        // Display tower prompt
-        show_move_prompt(status, rods);
-        
-        // 6. If game is not solved, keep asking user for next move 
-        pair<int,int> move = ask_input(rods);
+        pair<int, int> move = ask_move(rods, num_moves);
         to = move.first;
         from = move.second;
-        
-        
+
         // 7. Check if move is valid
         bool moveable = IsMoveAllowed(to, from, rods, towers);
-        
+
         // 8. Change disk location if move is valid
         if (moveable) {
             move_disk(towers, from, to);
             cout << "=> Move succeeded!" << endl << endl;
             print_towers(towers);
-            status += 1;
         }
-        else {
-            cout << "=> Move failed!" << endl;
-        }
-        
+
         // 9. Check if user solved the game
-        checkGameSolved(towers, target, status);
+        gameSolved = checkGameSolved(towers, target, num_moves);
+    }
+    // 10. If game is sovled, clear all rods and disks
+    towers.clear();
+}
+
+bool ask_replay() {
+    cout << "Do you want to play again? (Y/N): "; // Ask user for replay
+    char replay;
+    cin >> replay;
+
+    replay = tolower(replay); // Convert input to lowercase for case insensitivity
+
+    if (replay == 'y') {
+        return true;
+    }
+    else if (replay == 'n') {
+        return false;
+    }
+    else {
+        cout << "Invalid input. Please enter 'Y' or 'N'" << endl << endl;
+        return ask_replay(); // Recursively call the function until valid input is received
     }
 }
 
 
 
-
-
-void greet_user(){
+/* other subfunctions */
+void greet_user() {
     cout << endl;
-    cout << "Welcome to Tower of Hanoi!" << endl;
-    cout << "Let's set up the game." << endl << endl;
+    string asciiArt = R"(
+ ____      ____  ________  _____       ______    ___   ____    ____  ________                                                          
+|_  _|    |_  _||_   __  ||_   _|    .' ___  | .'   `.|_   \  /   _||_   __  |                                                         
+  \ \  /\  / /    | |_ \_|  | |     / .'   \_|/  .-.  \ |   \/   |    | |_ \_|                                                         
+   \ \/  \/ /     |  _| _   | |   _ | |       | |   | | | |\  /| |    |  _| _                                                          
+    \  /\  /     _| |__/ | _| |__/ |\ `.___.'\\  `-'  /_| |_\/_| |_  _| |__/ |                                                         
+     \/  \/     |________||________| `.____ .' `.___.'|_____||_____||________|                                                         
+                                _________    ___                                                                                       
+                               |  _   _  | .'   `.                                                                                     
+                               |_/ | | \_|/  .-.  \                                                                                    
+                                   | |    | |   | |                                                                                    
+                                  _| |_   \  `-'  /                                                                                    
+                                 |_____|   `.___.'                                                                                     
+ _________    ___   ____      ____  ________  _______           ___   ________     ____  ____       _       ____  _____   ___   _____  
+|  _   _  | .'   `.|_  _|    |_  _||_   __  ||_   __ \        .'   `.|_   __  |   |_   ||   _|     / \     |_   \|_   _|.'   `.|_   _| 
+|_/ | | \_|/  .-.  \ \ \  /\  / /    | |_ \_|  | |__) |      /  .-.  \ | |_ \_|     | |__| |      / _ \      |   \ | | /  .-.  \ | |   
+    | |    | |   | |  \ \/  \/ /     |  _| _   |  __ /       | |   | | |  _|        |  __  |     / ___ \     | |\ \| | | |   | | | |   
+   _| |_   \  `-'  /   \  /\  /     _| |__/ | _| |  \ \_     \  `-'  /_| |_        _| |  | |_  _/ /   \ \_  _| |_\   |_\  `-'  /_| |_  
+  |_____|   `.___.'     \/  \/     |________||____| |___|     `.___.'|_____|      |____||____||____| |____||_____|\____|`.___.'|_____|                                                                                                                                   
+                                                                                                                                           )";
+
+    cout << asciiArt << endl;
+    cout << "Let's start by setting up the game!" << endl << endl;
+}
+
+void clearInputBuffer() {
+    std::cin.clear(); // Clear the input buffer
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
+}
+
+int get_rods() {
+    int rods;
+    try {
+        cout << "Total number of rods: ";
+        cin >> rods;
+
+        // Check that input is integer
+        if (!cin)
+            error("( Please enter an integer :D )");
+
+        // Check if rods is less than the minimum number of rods, which is 3
+        else if (rods < 3)
+            throw out_of_range("( Number of rods must be 3 or more )");
+    }
+    catch (runtime_error& e) {
+        cout << "INVALID INPUT " << e.what() << endl << endl;
+        clearInputBuffer();// Clear the input buffer
+        return get_rods(); // Retry input
+    }
+    catch (out_of_range& e) {
+        cout << "OUT_OF_RANGE : " << e.what() << endl << endl;
+        clearInputBuffer();
+        return get_rods();
+    }
+    catch (...) {
+        cout << "INVALID INPUT!!" << endl << endl;
+        clearInputBuffer();
+        return get_rods();
+    }
+    return rods;
+}
+
+int get_disks() {
+    int disks;
+    try {
+        cout << "Total number of disks: ";
+        cin >> disks;
+
+        // Check that input is an integer
+        if (!cin)
+            error("Please enter an integer :)");
+
+        // Check if disks is less than zero
+        else if (disks <= 0)
+            throw out_of_range("Please enter a positive integer");
+    }
+    catch (runtime_error& e) {
+        cout << "INVALID INPUT : " << e.what() << endl << endl;
+        clearInputBuffer();  // Clear the input buffer
+        return get_disks(); // Retry input
+    }
+    catch (out_of_range& e) {
+        cout << "OUT_OF_RANGE : " << e.what() << endl << endl;
+        clearInputBuffer();
+        return get_disks();
+    }
+    catch (...) {
+        cout << "INVALID INPUT!!" << endl << endl;
+        clearInputBuffer();
+        return get_disks();
+    }
+    return disks;
 }
 
 void setup_game(int& rods, int& disks) {
-    cout << "Total number of rods: ";
-    cin >> rods;
+    // Get number of rods and disks from user
+    rods = get_rods();
+    disks = get_disks();
 
-    cout << "Total number of disks: ";
-    cin >> disks;
+    try {
+        // Check if number of rods is less than the number of disks
+        if (rods < disks) {
+            error("( Number of rods must be greater than or equal to the number of disks!! )");
+            cout << endl;
+        }
+    }
+    catch (runtime_error& e) {
+        cout << "INVALID INPUT " << e.what() << endl << endl;
+        setup_game(rods, disks);
+    }
+    catch (...) {
+        cout << "INVALID INPUT!!" << endl << endl;
+        setup_game(rods, disks);
+    }
     cout << endl;
-    
-    // ERROR HANDLING
-    if (!cin) // check that cin read an integer
-        error("Input is not an integer");
-
-    
-    // Show error message when number of rods is less than the number of disks
-    if (rods < disks)
-    {
-        // @ DISPLAY ERROR
-        cout << "ERROR : Number of rods must be greater or equal to the number of disks!!" << endl;
-        setup_game(rods,disks);
-    }
-    
-    // Show error message when number of rods is less than the minimum number of rods, that is 3
-    else if (rods < 3)
-    {
-        // @ DISPLAY ERROR
-        cout <<  "ERROR : Below minimum number of rods (Min : 3 rods)";
-        setup_game(rods,disks);
-    }
+    cout << "Let the game begin!!" << endl << endl;
 }
 
 vector<vector<int>> initialize_disks(int r, int d) {
     // Initialize rods without disks
-    vector<vector<int>> towers(r); 
+    vector<vector<int>> towers(r);
 
-    // Create initial tower
-    vector<int> initial_tower(d); 
+    // Create initial tower with disks stacked in descending order
+    vector<int> initial_tower(d);
     for (int i = 0; i < d; i++)
     {
         initial_tower[i] = d - i;
     }
+
+    // Initialize first rod with disks
     towers[0] = initial_tower;
 
-    // Leave the rest of the element vectors as empty vectors
+    // Leave the rest of the rods with no disks
     return towers;
+}
+
+vector<int> create_target_vector(int n) {
+    vector<int> target;
+    for (int i = n; i >= 1; --i) {
+        target.push_back(i);
+    }
+    return target;
 }
 
 void print_towers(vector<vector<int>> v) {
@@ -205,74 +283,6 @@ void print_towers(vector<vector<int>> v) {
     cout << endl;
 }
 
-bool IsMoveAllowed(int to, int from, int rods, const vector<vector<int>>& v) {
-    try{
-        // Check if index is out of range
-        if (from <= 0 || from > rods || to <= 0 || to > rods) 
-            throw range_error("Rod is out of range");   
-        
-        // Check if disk is placed on the same rod 
-        else if (from == to)
-            error("Disk placed on the same rod");
-        return true;
-    } catch (range_error& e) { // Out of range
-        cout << "Range Error: " << e.what() << endl;
-        return false;
-
-    } catch (runtime_error& e){ // Cannot place disk on the same rod
-        cout << "Runtime Error : " << e.what() << endl;
-        return false;
-
-    }
-}
-    
-
-
-    
-    // Get peak disk of the rod moving from and moving to
-    int fromPeakElement = get_peak_disk(v[from - 1]);
-    int toPeakElement = get_peak_disk(v[to - 1]);
-
-    // If there's nothing on the rod moving to or the disk being moved is smaller than the top disk on the rod moving to, return true
-    return fromPeakElement != 0 && (toPeakElement == 0 || (fromPeakElement < toPeakElement));
-}
-
-pair<int,int> ask_input(int rods) {
-
-
-    // Get from and to index
-    int from, to;
-    cin >> from >> to;
-    
-    return make_pair(to,from);
-}
-
-
-void checkGameSolved(vector<vector<int>>& v, vector<int>& target, int& status){
-    // Iterate over the 2D vector starting from the second row
-    for (auto it = v.begin() + 1; it != v.end(); ++it) {
-        // Check if the current row is equal to the target vector
-        if (*it == target) {
-            cout << "Congratulations! You solved it in " << status << " moves!" << endl;
-            status = -1;
-            return ;
-        }
-    }
-}
-
-vector<int> create_target_vector(int n) {
-    vector<int> target;
-    for (int i = n; i >= 1; --i) {
-        target.push_back(i);
-    }
-    return target;
-}
-
-void move_disk(vector<vector<int>>& v, int from, int to) {
-    v[to - 1].push_back(v[from - 1].back());
-    v[from - 1].pop_back();
-}
-
 int get_peak_disk(const vector<int>& v) {
     if (v.empty()) {
         // If the vector is empty, return 0 indicating no disk
@@ -289,28 +299,133 @@ int get_peak_disk(const vector<int>& v) {
     return 0;
 }
 
-void show_move_prompt(int& status, int rods) {
-    cout << endl;
-    cout << "[" << status + 1<< "] " << "From which tower will you move a disk to which tower? (from=[1";
-    for (int i = 1; i < rods; i++) {
-        cout << "|" << i + 1;
-    }
-    cout << "], to = [1";
+bool IsMoveAllowed(int to, int from, int rods, const vector<vector<int>>& v) {
+    try {
 
-    for (int i = 1; i < rods; i++) {
-        cout << "|" << i + 1;
+        // Check if index is out of range
+        if (from <= 0 || from > rods || to <= 0 || to > rods)
+            throw out_of_range("( Rod is out of range )");
+
+        // Get peak disk of the rod moving from and moving to
+        int fromPeakElement = get_peak_disk(v[from - 1]);
+        int toPeakElement = get_peak_disk(v[to - 1]);
+
+
+        // Check if disk is being moved to the same rod 
+        if (from == to)
+            error("( Attempted to place disk on the same rod )");
+
+        // Check if disk does not exist
+        else if (fromPeakElement == 0)
+            error("( Cannot move from rod with no disks )");
+
+        // Check if disk being moved is larger than the disk at the destination rod
+        else if (toPeakElement != 0 && toPeakElement < fromPeakElement)
+            error("( Destination rod has a smaller disk than the one being moved )");
+        return true;
     }
-    cout << "]):";
+    catch (out_of_range& e) { // Out of range
+        cout << "=> Move failed! " << e.what() << endl;
+        return false;
+
+    }
+    catch (runtime_error& e) { // Cannot place disk on the same rod
+        cout << "=> Move failed! " << e.what() << endl;
+        return false;
+
+    }
+    catch (...) {
+        cout << "= > Move failed!!!" << endl;
+        return false;
+    }
 }
 
-bool ask_replay() {
-    cout << "Do you want to play again? (Y/N):";
-    char replay;
-    cin >> replay;
+void display_prompt(int& num_moves, int rods) {
+    cout << endl;
 
-    if (replay == 'Y' || replay == 'y')
-    {
-        return true;
+    // Create a string of index lists
+    string indices = "[1";
+    for (int i = 1; i < rods; i++) {
+        indices += "|" + to_string(i + 1);
+    }
+    indices += "]";
+
+    // Display prompt with index list
+
+    cout << "[" << num_moves << "] From which tower will you move a disk to which tower? (from="
+        << indices << ", to=" << indices << "): ";
+}
+
+int get_moveFrom() {
+    int from;
+    cin >> from;
+
+    // Check if input is integer
+    if (!cin)
+        error("( Please enter an integer :D )");
+    // Check if move is greater than zero
+    else if (from <= 0)
+        throw out_of_range("( Please enter move within the range )");
+
+    return from;
+}
+
+int get_moveTo() {
+    int to;
+    cin >> to;
+
+    // Check if input is integer
+    if (!cin)
+        error("( Please enter an integer :D )");
+    // Check if move is greater than zero
+    else if (to <= 0)
+        throw out_of_range("( Please enter move within the range )");
+    return to;
+}
+
+pair<int, int> get_move(int rods, int& num_moves) {
+    try {
+
+        int from = get_moveFrom();
+        int to = get_moveTo();
+        return { to, from };
+    }
+    catch (out_of_range& e) {
+        cout << "=> Move failed! " << e.what() << endl;
+        clearInputBuffer();
+        return ask_move(rods, num_moves);
+    }
+    catch (runtime_error& e) {
+        cout << "=> Move failed! " << e.what() << endl;
+        clearInputBuffer();
+        return ask_move(rods, num_moves);
+    }
+    catch (...) {
+        cout << "=> Move failed! " << endl;
+        clearInputBuffer();
+        return ask_move(rods, num_moves);
+    }
+}
+
+pair<int, int> ask_move(int rods, int& num_moves) {
+    num_moves += 1;
+    display_prompt(num_moves, rods);
+    return get_move(rods, num_moves);
+}
+
+void move_disk(vector<vector<int>>& v, int from, int to) {
+    v[to - 1].push_back(v[from - 1].back());
+    v[from - 1].pop_back();
+}
+
+bool checkGameSolved(vector<vector<int>>& v, vector<int>& target, int& num_moves) {
+    // Iterate over the rods starting from the second rod
+    for (auto it = v.begin() + 1; it != v.end(); ++it) {
+        // Check if the each rod is equal to the target vector
+        if (*it == target) {
+            cout << "Congratulations! You solved it in " << num_moves << " moves!" << endl;
+            return true;
+        }
     }
     return false;
 }
