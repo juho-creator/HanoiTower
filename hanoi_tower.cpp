@@ -232,8 +232,7 @@ void setup_game(int& rods, int& disks) {
         cout << "INVALID INPUT!!" << endl << endl;
         setup_game(rods, disks);
     }
-    cout << endl;
-    cout << "Let the game begin!!" << endl << endl;
+    cout << endl << endl;
 }
 
 vector<vector<int>> initialize_disks(int r, int d) {
