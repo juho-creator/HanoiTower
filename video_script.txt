@@ -1,0 +1,22 @@
+This is a game of tower of hanoi developed in C++ using text based interface.
+
+The game starts with a welcome message. 
+Then a prompt message appears asking user to setup the number of rods and disks
+User is asked again if an invalid input is entered.
+This includes number of rods being less than that of disks, 
+and noninteger or negative number being entered.
+
+Once the user sets up the number of rods and disks,
+the disks are stacked in descending order of sizes on the first rod, 
+with the largest disks stacked at the very bottom and the smallest at the top.
+
+The objective of the game is to move all the disks to another rod in the same descending order.
+The user is not allowed to place larger disks on smaller disks or move  from a rod that doesn't exist or with no disks.
+
+Once the user is done playing the game, replay prompt is displayed.
+If the user enters "y", game is replayed. otherwise if "n" is entered, the game ends.
+
+
+Link for the repository will be down in the description. 
+Thanks for watching my video and if you have any questions feel free to comment down below.
+I'll see you next time bye bye.
