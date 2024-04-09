@@ -3,8 +3,17 @@
 
 # 하노이 타워
 코드는 고급 C프로그래밍 수업의 과제로 개발된 하노이 타워 게임입니다.
+</br></br>
+
+
 
 ## 시연 영상
+[![image](https://github.com/juho-creator/HanoiTower/assets/72856990/8931fa43-294e-491f-a8b0-16a05a21b6f2)
+](https://www.youtube.com/watch?v=CoiyGsFQT0E
+)
+</br></br>
+
+
 
 ## 설명
 
@@ -24,6 +33,15 @@
 - 타워와 디스크의 시각적 표현으로 쉬운 이해
 
 하노이 타워 퍼즐을 해결하는 도전을 즐기고 문제 해결 능력을 테스트하세요!
+</br></br>
+
+
 
 ## 참고문헌
 - [Naming convention of C++](https://www.geeksforgeeks.org/naming-convention-in-c/)
+- [How to simplify your code](https://www.youtube.com/watch?v=CFRhGnuXG-4)
+- [How to stop confiscating code with comments](https://www.youtube.com/watch?v=Bf7vDBBOBUA)
+- [ASCII art of welcome message](https://patorjk.com/software/taag/#p=display&f=Varsity&t=WELCOME%20%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20TO%0ATOWER%20%20%20%20OF%20%20%20HANOI)
+- [Call by reference vs Call by value](https://www.geeksforgeeks.org/difference-between-call-by-value-and-call-by-reference/)
+- [Aggregation: Creating function with subfunctions.](https://www.geeksforgeeks.org/association-composition-aggregation-java/)
+  
